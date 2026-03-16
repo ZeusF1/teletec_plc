@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OSBB PLC — Налаштування</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f0f2f5; color: #333; }
+
+.header { background: #1a3a5c; color: #fff; padding: 12px 20px; display: flex; align-items: center; gap: 16px; }
+.header h1 { font-size: 18px; font-weight: 500; }
+.header .subtitle { font-size: 13px; opacity: 0.7; }
+
+nav.top-nav { background: #1a3a5c; border-top: 1px solid rgba(255,255,255,0.15); padding: 0 20px; display: flex; gap: 0; }
+nav.top-nav a { color: rgba(255,255,255,0.6); text-decoration: none; padding: 10px 20px; font-size: 14px; border-bottom: 2px solid transparent; transition: all 0.2s; }
+nav.top-nav a:hover { color: #fff; }
+nav.top-nav a.active { color: #fff; border-bottom-color: #fff; font-weight: 600; }
+
+.container { max-width: 900px; margin: 0 auto; padding: 16px; }
+
+.panel { background: #fff; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.tabs { display: flex; gap: 0; border-bottom: 2px solid #e8e8e8; padding: 0 16px; background: #fafafa; flex-wrap: wrap; }
+.tab { padding: 10px 16px; cursor: pointer; font-size: 13px; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all 0.2s; color: #666; white-space: nowrap; }
+.tab:hover { color: #1a3a5c; }
+.tab.active { color: #1a3a5c; border-bottom-color: #1a3a5c; font-weight: 600; }
+
+.tab-content { padding: 20px; }
+
+.form-group { margin-bottom: 16px; }
+.form-group label { display: block; font-size: 13px; color: #555; font-weight: 600; margin-bottom: 4px; }
+.form-group input[type="text"],
+.form-group input[type="number"],
+.form-group input[type="password"],
+.form-group select { padding: 8px 12px; border: 1px solid #d0d0d0; border-radius: 4px; font-size: 13px; width: 100%; max-width: 400px; }
+.form-group .hint { font-size: 11px; color: #999; margin-top: 2px; }
+
+.form-row { display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap; }
+.form-row .form-group { flex: 1; min-width: 200px; }
+
+.radio-group { display: flex; gap: 16px; margin-top: 4px; }
+.radio-group label { font-weight: 400; font-size: 13px; display: flex; align-items: center; gap: 4px; cursor: pointer; }
+
+.btn { padding: 8px 18px; border: none; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: 500; }
+.btn-primary { background: #1a3a5c; color: #fff; }
+.btn-primary:hover { background: #244d73; }
+.btn-secondary { background: #e8e8e8; color: #333; }
+.btn-secondary:hover { background: #d0d0d0; }
+.btn-danger { background: #c62828; color: #fff; }
+.btn-danger:hover { background: #d32f2f; }
+.btn-sm { padding: 5px 12px; font-size: 12px; }
+
+.status-info { display: flex; align-items: center; gap: 8px; padding: 10px 14px; background: #f5f5f5; border-radius: 4px; margin-bottom: 12px; font-size: 13px; }
+.status-ok { border-left: 3px solid #4caf50; }
+.status-warn { border-left: 3px solid #ff9800; }
+.status-err { border-left: 3px solid #c62828; }
+
+.user-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.user-table th { text-align: left; padding: 8px; border-bottom: 2px solid #e8e8e8; font-weight: 600; color: #555; }
+.user-table td { padding: 8px; border-bottom: 1px solid #f0f0f0; }
+
+.log-viewer { background: #1e1e1e; color: #d4d4d4; font-family: monospace; font-size: 12px; padding: 12px; border-radius: 4px; max-height: 400px; overflow-y: auto; white-space: pre-wrap; word-break: break-all; line-height: 1.5; }
+
+.msg { padding: 8px 14px; border-radius: 4px; font-size: 13px; margin-bottom: 12px; display: none; }
+.msg-ok { background: #e8f5e9; color: #2e7d32; display: block; }
+.msg-err { background: #fce4ec; color: #c62828; display: block; }
+
+.actions { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+
+@media (max-width: 768px) {
+    .form-row { flex-direction: column; }
+    .tabs { overflow-x: auto; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+    <h1>OSBB PLC</h1>
+    <span class="subtitle">Налаштування</span>
+</div>
+
+<nav class="top-nav">
+    <a href="meter_ui.html">Лічильники</a>
+    <a href="status.html">Статус</a>
+    <a href="settings.html" class="active">Налаштування</a>
+</nav>
+
+<div class="container">
+    <div class="panel">
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('db')">База даних</div>
+            <div class="tab" onclick="switchTab('plc')">PLC</div>
+            <div class="tab" onclick="switchTab('ui')">Інтерфейс</div>
+            <div class="tab" onclick="switchTab('security')">Безпека</div>
+            <div class="tab" onclick="switchTab('export')">Експорт</div>
+            <div class="tab" onclick="switchTab('system')">Система</div>
+        </div>
+        <div class="tab-content" id="tabContent">
+            <div style="text-align:center;color:#888;padding:20px">Завантаження...</div>
+        </div>
+    </div>
+</div>
+
+<script>
+var CONFIG_API = 'config_api.php';
+var _config = null;
+var _currentTab = 'db';
+var _users = null;
+
+function switchTab(tab) {
+    _currentTab = tab;
+    document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+    document.querySelector('.tab[onclick*="' + tab + '"]').classList.add('active');
+    renderTab();
+}
+
+function loadConfig(callback) {
+    fetch(CONFIG_API + '?cmd=get_config')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (data.error) { showMsg(data.error, true); return; }
+        _config = data;
+        if (callback) callback();
+    })
+    .catch(function(e) { showMsg('Error: ' + e, true); });
+}
+
+function renderTab() {
+    var el = document.getElementById('tabContent');
+    switch (_currentTab) {
+        case 'db': renderDbTab(el); break;
+        case 'plc': renderPlcTab(el); break;
+        case 'ui': renderUiTab(el); break;
+        case 'security': renderSecurityTab(el); break;
+        case 'export': renderExportTab(el); break;
+        case 'system': renderSystemTab(el); break;
+    }
+}
+
+function esc(s) { var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+function showMsg(text, isError) {
+    var el = document.getElementById('tabMsg');
+    if (!el) return;
+    el.className = 'msg ' + (isError ? 'msg-err' : 'msg-ok');
+    el.textContent = text;
+    setTimeout(function() { el.className = 'msg'; }, 5000);
+}
+
+function cfgVal(key, fallback) {
+    if (!_config || !_config.config) return fallback || '';
+    return _config.config[key] !== undefined ? _config.config[key] : (fallback || '');
+}
+
+// ============================================================
+// Tab: База даних
+// ============================================================
+
+function renderDbTab(el) {
+    var db = _config ? _config.db : {};
+    var statusCls = db.exists ? 'status-ok' : 'status-err';
+    var statusText = db.exists ? 'OK — ' + (db.size_mb || '?') + ' MB' : 'Файл не знайдено';
+
+    var html = '<div id="tabMsg" class="msg"></div>';
+    html += '<div class="status-info ' + statusCls + '">Статус: ' + statusText;
+    if (db.wal_size_mb) html += ' | WAL: ' + db.wal_size_mb + ' MB';
+    html += '</div>';
+
+    html += '<div class="form-group"><label>Поточний шлях до БД</label>';
+    html += '<div class="form-row"><div class="form-group"><input type="text" id="cfgDbPath" value="' + esc(db.path || '') + '"></div>';
+    html += '<div><button class="btn btn-secondary btn-sm" onclick="checkDbPath()">Перевірити</button></div></div>';
+    html += '<div class="hint">Зміна шляху потребує перезавантаження сервісів</div></div>';
+    html += '<div id="dbCheckResult"></div>';
+
+    html += '<h4 style="margin:16px 0 8px;font-size:14px">Резервне копіювання</h4>';
+    html += '<div class="form-group"><label>Папка</label><span style="font-size:13px;font-family:monospace">' + esc(db.backup_dir || '/usr/local/rt4/backup/') + '</span></div>';
+    if (db.last_backup) {
+        html += '<div class="status-info status-ok">Остання копія: ' + db.last_backup.date + ' (' + db.last_backup.size_mb + ' MB) — ' + db.last_backup.file + '</div>';
+    }
+    html += '<div class="actions">';
+    html += '<button class="btn btn-primary" onclick="doBackup()">Створити копію</button>';
+    html += '<button class="btn btn-secondary" onclick="doVacuum()">VACUUM</button>';
+    html += '<button class="btn btn-secondary" onclick="doOptimize()">PRAGMA optimize</button>';
+    html += '</div>';
+
+    el.innerHTML = html;
+}
+
+function checkDbPath() {
+    var path = document.getElementById('cfgDbPath').value;
+    fetch(CONFIG_API + '?cmd=db_check&path=' + encodeURIComponent(path))
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        var el = document.getElementById('dbCheckResult');
+        if (data.valid) {
+            el.innerHTML = '<div class="status-info status-ok">OK — SQLite3, ' + data.meter_count + ' лічильників, ' + data.size_mb + ' MB</div>';
+        } else if (data.exists) {
+            el.innerHTML = '<div class="status-info status-err">Файл є, але не SQLite: ' + (data.error || '') + '</div>';
+        } else {
+            el.innerHTML = '<div class="status-info status-err">Файл не знайдено</div>';
+        }
+    });
+}
+
+function doBackup() {
+    if (!confirm('Створити резервну копію?')) return;
+    fetch(CONFIG_API + '?cmd=db_backup', {method: 'POST'})
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (data.error) showMsg(data.error, true);
+        else { showMsg('Копію створено: ' + data.file + ' (' + data.size_mb + ' MB)'); loadConfig(renderTab); }
+    });
+}
+
+function doVacuum() {
+    if (!confirm('VACUUM може зайняти декілька хвилин. Продовжити?')) return;
+    fetch(CONFIG_API + '?cmd=db_vacuum', {method: 'POST'})
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (data.error) showMsg(data.error, true);
+        else showMsg('VACUUM: ' + data.size_before_mb + ' → ' + data.size_after_mb + ' MB (звільнено ' + data.saved_mb + ' MB)');
+    });
+}
+
+function doOptimize() {
+    fetch(CONFIG_API + '?cmd=db_optimize', {method: 'POST'})
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (data.error) showMsg(data.error, true);
+        else showMsg('PRAGMA optimize виконано');
+    });
+}
+
+// ============================================================
+// Tab: PLC
+// ============================================================
+
+function renderPlcTab(el) {
+    var html = '<div id="tabMsg" class="msg"></div>';
+    html += '<div class="form-group"><label>Пароль 1</label><input type="password" id="cfgPsw1" value="' + esc(cfgVal('psw1')) + '"></div>';
+    html += '<div class="form-group"><label>Пароль 2</label><input type="password" id="cfgPsw2" value="' + esc(cfgVal('psw2')) + '"></div>';
+    html += '<div class="form-group"><label>Пароль 3</label><input type="password" id="cfgPsw3" value="' + esc(cfgVal('psw3')) + '"></div>';
+    html += '<div class="form-group"><label>Директорія завдань</label><input type="text" id="cfgTareasDir" value="' + esc(cfgVal('tareas_dir', '/var/volatile/log/rt4/')) + '"></div>';
+    html += '<div class="form-group"><label>Глибина лога (днів)</label><input type="number" id="cfgLogFondo" value="' + esc(cfgVal('log_fondo', '30')) + '"></div>';
+    html += '<div class="actions"><button class="btn btn-primary" onclick="savePlcConfig()">Зберегти</button></div>';
+    el.innerHTML = html;
+}
+
+function savePlcConfig() {
+    var data = {
+        psw1: document.getElementById('cfgPsw1').value,
+        psw2: document.getElementById('cfgPsw2').value,
+        psw3: document.getElementById('cfgPsw3').value,
+        tareas_dir: document.getElementById('cfgTareasDir').value,
+        log_fondo: document.getElementById('cfgLogFondo').value
+    };
+    saveConfig(data);
+}
+
+// ============================================================
+// Tab: Інтерфейс
+// ============================================================
+
+function renderUiTab(el) {
+    var lang = cfgVal('lengua', '2');
+    if (lang == '0') lang = '2'; // migrate from removed Russian
+    var html = '<div id="tabMsg" class="msg"></div>';
+    html += '<div class="form-group"><label>Мова</label>';
+    html += '<div class="radio-group">';
+    html += '<label><input type="radio" name="cfgLang" value="1"' + (lang == '1' ? ' checked' : '') + '> English</label>';
+    html += '<label><input type="radio" name="cfgLang" value="2"' + (lang == '2' ? ' checked' : '') + '> Українська</label>';
+    html += '</div></div>';
+
+    html += '<div class="form-group"><label>Часовий пояс</label>';
+    html += '<input type="text" id="cfgTimezone" value="' + esc(cfgVal('time_zone', 'Europe/Kiev')) + '">';
+    html += '<div class="hint">Наприклад: Europe/Kiev, Europe/London</div></div>';
+
+    html += '<div class="form-group"><label>Назва організації (для XLSX)</label>';
+    html += '<input type="text" id="cfgOrgName" value="' + esc(cfgVal('org_name', '')) + '" placeholder="ОСББ &quot;Наш дім&quot;"></div>';
+
+    html += '<div class="actions"><button class="btn btn-primary" onclick="saveUiConfig()">Зберегти</button></div>';
+    el.innerHTML = html;
+}
+
+function saveUiConfig() {
+    var lang = document.querySelector('input[name="cfgLang"]:checked');
+    var data = {
+        lengua: lang ? lang.value : '0',
+        time_zone: document.getElementById('cfgTimezone').value,
+        org_name: document.getElementById('cfgOrgName').value
+    };
+    saveConfig(data);
+}
+
+// ============================================================
+// Tab: Безпека
+// ============================================================
+
+function renderSecurityTab(el) {
+    var html = '<div id="tabMsg" class="msg"></div>';
+    html += '<div class="form-row">';
+    html += '<div class="form-group"><label>Таймаут сесії (сек)</label><input type="number" id="cfgSessionTimeout" value="' + esc(cfgVal('session_timeout', '3600')) + '"></div>';
+    html += '<div class="form-group"><label>Макс. спроб входу</label><input type="number" id="cfgMaxAttempts" value="' + esc(cfgVal('max_login_attempts', '5')) + '"></div>';
+    html += '<div class="form-group"><label>Блокування (хв)</label><input type="number" id="cfgLockoutMin" value="' + esc(cfgVal('lockout_minutes', '5')) + '"></div>';
+    html += '</div>';
+    html += '<div class="actions" style="margin-bottom:20px"><button class="btn btn-primary" onclick="saveSecurityConfig()">Зберегти</button></div>';
+
+    html += '<h4 style="font-size:14px;margin-bottom:10px">Користувачі</h4>';
+    html += '<div id="userList">Завантаження...</div>';
+    el.innerHTML = html;
+
+    loadUsers();
+}
+
+function loadUsers() {
+    fetch(CONFIG_API + '?cmd=users')
+    .then(function(r) {
+        var ct = r.headers.get('content-type') || '';
+        if (ct.indexOf('json') === -1) {
+            return r.text().then(function(txt) { throw new Error('Not JSON: ' + txt.substring(0, 200)); });
+        }
+        return r.json();
+    })
+    .then(function(data) {
+        if (data.error) { document.getElementById('userList').innerHTML = '<div class="msg msg-err">' + esc(data.error) + '</div>'; return; }
+        _users = data.users || [];
+        renderUserTable();
+    })
+    .catch(function(e) {
+        document.getElementById('userList').innerHTML = '<div class="msg msg-err">Помилка: ' + esc(String(e)) + '</div>';
+    });
+}
+
+function renderUserTable() {
+    if (!_users) return;
+    if (_users.length === 0) {
+        document.getElementById('userList').innerHTML = '<div style="color:#888;font-size:13px">Користувачів не знайдено в базі даних. Можливо, таблиця users порожня.</div>';
+        return;
+    }
+    var html = '<table class="user-table"><thead><tr><th>Логін</th><th>Група</th><th>Статус</th><th></th></tr></thead><tbody>';
+    for (var i = 0; i < _users.length; i++) {
+        var u = _users[i];
+        var statusHtml = u.status === 'active' ? '<span style="color:#2e7d32">Активний</span>' : '<span style="color:#c62828">Заблокований</span>';
+        html += '<tr><td>' + esc(u.name) + '</td><td>' + esc(u.group || '—') + '</td><td>' + statusHtml + '</td>';
+        html += '<td><button class="btn btn-secondary btn-sm" onclick="promptPassword(' + u.id + ',\'' + esc(u.name) + '\')">Пароль</button></td></tr>';
+    }
+    html += '</tbody></table>';
+    document.getElementById('userList').innerHTML = html;
+}
+
+function promptPassword(userId, userName) {
+    var pw = prompt('Новий пароль для ' + userName + ':');
+    if (!pw) return;
+    if (pw.length < 4) { alert('Мін. 4 символи'); return; }
+
+    fetch(CONFIG_API + '?cmd=set_password', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({user_id: userId, password: pw})
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (data.error) showMsg(data.error, true);
+        else showMsg('Пароль змінено для ' + userName);
+    });
+}
+
+function saveSecurityConfig() {
+    var data = {
+        session_timeout: document.getElementById('cfgSessionTimeout').value,
+        max_login_attempts: document.getElementById('cfgMaxAttempts').value,
+        lockout_minutes: document.getElementById('cfgLockoutMin').value
+    };
+    saveConfig(data);
+}
+
+// ============================================================
+// Tab: Експорт
+// ============================================================
+
+function renderExportTab(el) {
+    var delim = cfgVal('csv_delimiter', ';');
+    var enc = cfgVal('csv_encoding', 'UTF-8');
+
+    var html = '<div id="tabMsg" class="msg"></div>';
+    html += '<div class="form-group"><label>Роздільник CSV</label>';
+    html += '<div class="radio-group">';
+    html += '<label><input type="radio" name="cfgDelim" value=";"' + (delim === ';' ? ' checked' : '') + '> Крапка з комою (;)</label>';
+    html += '<label><input type="radio" name="cfgDelim" value=","' + (delim === ',' ? ' checked' : '') + '> Кома (,)</label>';
+    html += '<label><input type="radio" name="cfgDelim" value="tab"' + (delim === 'tab' ? ' checked' : '') + '> Tab</label>';
+    html += '</div></div>';
+
+    html += '<div class="form-group"><label>Кодування CSV</label>';
+    html += '<div class="radio-group">';
+    html += '<label><input type="radio" name="cfgEnc" value="UTF-8"' + (enc === 'UTF-8' ? ' checked' : '') + '> UTF-8</label>';
+    html += '<label><input type="radio" name="cfgEnc" value="Windows-1251"' + (enc === 'Windows-1251' ? ' checked' : '') + '> Windows-1251</label>';
+    html += '</div></div>';
+
+    html += '<div class="actions"><button class="btn btn-primary" onclick="saveExportConfig()">Зберегти</button></div>';
+    el.innerHTML = html;
+}
+
+function saveExportConfig() {
+    var delim = document.querySelector('input[name="cfgDelim"]:checked');
+    var enc = document.querySelector('input[name="cfgEnc"]:checked');
+    var data = {
+        csv_delimiter: delim ? delim.value : ';',
+        csv_encoding: enc ? enc.value : 'UTF-8'
+    };
+    saveConfig(data);
+}
+
+// ============================================================
+// Tab: Система
+// ============================================================
+
+function renderSystemTab(el) {
+    var html = '<div id="tabMsg" class="msg"></div>';
+    html += '<div id="sysInfo">Завантаження...</div>';
+    html += '<h4 style="font-size:14px;margin:16px 0 8px">Логи</h4>';
+    html += '<div class="form-row" style="margin-bottom:12px">';
+    html += '<div><button class="btn btn-secondary btn-sm" onclick="loadLog(\'plc\')">PLC лог</button></div>';
+    html += '<div><button class="btn btn-secondary btn-sm" onclick="loadLog(\'php\')">PHP лог</button></div>';
+    html += '<div><button class="btn btn-secondary btn-sm" onclick="loadLog(\'nginx\')">nginx лог</button></div>';
+    html += '</div>';
+    html += '<div id="logViewer"></div>';
+    el.innerHTML = html;
+
+    fetch(CONFIG_API + '?cmd=system_info')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (data.error) { document.getElementById('sysInfo').innerHTML = '<div class="msg msg-err">' + esc(data.error) + '</div>'; return; }
+        var html = '<div class="status-info status-ok">';
+        html += '<b>' + esc(data.version) + '</b> | PHP ' + esc(data.php) + ' | SQLite ' + esc(data.sqlite3);
+        if (data.nginx) html += ' | nginx ' + esc(data.nginx);
+        html += '</div>';
+        html += '<div style="font-size:12px;color:#888;margin-top:4px">' + esc(data.platform || '') + '</div>';
+        document.getElementById('sysInfo').innerHTML = html;
+    });
+}
+
+function loadLog(source) {
+    var el = document.getElementById('logViewer');
+    el.innerHTML = '<div style="color:#888;font-size:13px">Завантаження...</div>';
+
+    fetch(CONFIG_API + '?cmd=logs&source=' + source + '&lines=100')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (data.error) { el.innerHTML = '<div class="msg msg-err">' + esc(data.error) + '</div>'; return; }
+        var html = '<div style="font-size:12px;color:#888;margin-bottom:6px">' + esc(data.path) + ' (' + data.count + ' рядків)</div>';
+        html += '<div class="log-viewer">' + esc(data.lines.join('\n')) + '</div>';
+        el.innerHTML = html;
+    });
+}
+
+// ============================================================
+// Common save function
+// ============================================================
+
+function saveConfig(data) {
+    fetch(CONFIG_API + '?cmd=set_config', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(resp) {
+        if (resp.error) showMsg(resp.error, true);
+        else { showMsg('Збережено'); loadConfig(renderTab); }
+    })
+    .catch(function(e) { showMsg('Error: ' + e, true); });
+}
+
+// ============================================================
+// Init
+// ============================================================
+
+document.addEventListener('DOMContentLoaded', function() {
+    loadConfig(function() {
+        renderTab();
+    });
+});
+</script>
+</body>
+</html>
